@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PATHFIT JPA Log</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            color: #334155;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        #app {
+            background-color: #ffffff;
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 2.5rem;
+            max-width: 900px;
+            width: 100%;
+            margin: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        .form-container {
+            border-bottom: 1px solid #e2e8f0;
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+        }
+        button {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        .log-entry {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div id="app">
+    <div class="form-container">
+        <h1 class="text-4xl font-bold text-center mb-2 text-gray-800">PATHFIT JPA Log</h1>
+        <p class="text-center text-gray-600 mb-6">Track your physical activities toward health and fitness.</p>
+
+        <form id="log-form" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                    <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <input type="date" id="date" required class="w-full rounded-md">
+                </div>
+                <div>
+                    <label for="activity" class="block text-sm font-medium text-gray-700 mb-1">Activity/Exercise</label>
+                    <input type="text" id="activity" placeholder="e.g., Jogging at the park" required class="w-full rounded-md">
+                </div>
+                <div>
+                    <label for="duration" class="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                    <input type="number" id="duration" placeholder="e.g., 30" required class="w-full rounded-md">
+                </div>
+                <div>
+                    <label for="intensity" class="block text-sm font-medium text-gray-700 mb-1">Intensity</label>
+                    <select id="intensity" required class="w-full rounded-md">
+                        <option value="">Select Intensity</option>
+                        <option value="Low">Low</option>
+                        <option value="Moderate">Moderate</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="venue" class="block text-sm font-medium text-gray-700 mb-1">Venue</label>
+                    <input type="text" id="venue" placeholder="e.g., Home, City Gym" required class="w-full rounded-md">
+                </div>
+                <div class="col-span-1 lg:col-span-1">
+                    <label for="evidence" class="block text-sm font-medium text-gray-700 mb-1">Evidence (optional)</label>
+                    <input type="url" id="evidence" placeholder="e.g., Image URL or link" class="w-full rounded-md">
+                </div>
+            </div>
+            <div>
+                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea id="notes" rows="3" placeholder="Add any reflections or details about your workout." class="w-full rounded-md"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-blue-600 text-white font-semibold py-3 px-4 rounded-xl hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">Add Log Entry</button>
+        </form>
+    </div>
+
+    <div class="log-entries-container">
+        <h2 class="text-2xl font-semibold mb-4 text-gray-800">My Activities</h2>
+        <div id="log-list" class="space-y-4">
+            
+        </div>
+        <p id="empty-state" class="text-center text-gray-500 mt-8 hidden">No activities logged yet. Start by adding your first entry above!</p>
+    </div>
+</div>
+
+<div id="modal-container" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Confirmation</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-500" id="modal-message">Do you want to delete this entry?</p>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button id="modal-cancel" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md w-full shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors">Cancel</button>
+                <button id="modal-confirm" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 mt-2 focus:outline-none focus:ring-2 focus:ring-red-500 transition-colors">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const logForm = document.getElementById('log-form');
+    const logListEl = document.getElementById('log-list');
+    const emptyStateEl = document.getElementById('empty-state');
+    const modalContainer = document.getElementById('modal-container');
+    const modalConfirmBtn = document.getElementById('modal-confirm');
+    const modalCancelBtn = document.getElementById('modal-cancel');
+
+    const STORAGE_KEY = 'pathfit_jpa_logs';
+
+    let docToDeleteId = null;
+
+    const getLogs = () => {
+        try {
+            const logs = localStorage.getItem(STORAGE_KEY);
+            return logs ? JSON.parse(logs) : [];
+        } catch (e) {
+            console.error("Error retrieving logs from local storage", e);
+            return [];
+        }
+    };
+
+    const saveLogs = (logs) => {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+        } catch (e) {
+            console.error("Error saving logs to local storage", e);
+        }
+    };
+
+    const renderLogs = () => {
+        const logs = getLogs();
+        logListEl.innerHTML = '';
+        if (logs.length === 0) {
+            emptyStateEl.classList.remove('hidden');
+        } else {
+            emptyStateEl.classList.add('hidden');
+            logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+            logs.forEach(log => {
+                const logEntryEl = document.createElement('div');
+                logEntryEl.className = 'log-entry';
+                logEntryEl.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="space-y-1">
+                            <p class="text-xl font-semibold text-gray-800">${log.activity}</p>
+                            <p class="text-gray-500 text-sm">${new Date(log.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            <p class="text-gray-700"><strong>Duration:</strong> ${log.duration} minutes</p>
+                            <p class="text-gray-700"><strong>Intensity:</strong> ${log.intensity}</p>
+                            <p class="text-gray-700"><strong>Venue:</strong> ${log.venue}</p>
+                            ${log.notes ? `<p class="mt-2 text-gray-600 italic">Notes: ${log.notes}</p>` : ''}
+                            ${log.evidence ? `<a href="${log.evidence}" target="_blank" class="text-blue-500 hover:underline text-sm mt-2 block">View Evidence</a>` : ''}
+                        </div>
+                        <button class="delete-btn text-red-500 hover:text-red-700 transition-colors" data-id="${log.id}">
+                             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                logListEl.appendChild(logEntryEl);
+            });
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    docToDeleteId = e.currentTarget.dataset.id;
+                    modalContainer.classList.remove('hidden');
+                });
+            });
+        }
+    };
+
+    logForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const newLog = {
+            id: Date.now().toString(),
+            date: document.getElementById('date').value,
+            activity: document.getElementById('activity').value,
+            duration: parseInt(document.getElementById('duration').value),
+            intensity: document.getElementById('intensity').value,
+            venue: document.getElementById('venue').value,
+            evidence: document.getElementById('evidence').value,
+            notes: document.getElementById('notes').value
+        };
+
+        const logs = getLogs();
+        logs.push(newLog);
+        saveLogs(logs);
+        logForm.reset();
+        renderLogs();
+    });
+
+    modalConfirmBtn.addEventListener('click', () => {
+        if (docToDeleteId) {
+            const logs = getLogs();
+            const updatedLogs = logs.filter(log => log.id !== docToDeleteId);
+            saveLogs(updatedLogs);
+            renderLogs();
+            docToDeleteId = null;
+            modalContainer.classList.add('hidden');
+        }
+    });
+
+    modalCancelBtn.addEventListener('click', () => {
+        docToDeleteId = null;
+        modalContainer.classList.add('hidden');
+    });
+
+    renderLogs();
+
+</script>
+
+</body>
+</html>
+
